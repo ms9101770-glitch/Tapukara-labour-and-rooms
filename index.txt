@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>टपुकड़ा लेबर और रूम हॉप (Tapukara Hub)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-blue-600 text-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div>
+                <h1 id="appTitle" class="text-xl font-bold">🛠️ टपुकड़ा लेबर & रूम हॉप</h1>
+                <p id="appSubtitle" class="text-xs text-blue-100">चौक के मजदूर, मिस्त्री और रूम की जानकारी एक जगह</p>
+            </div>
+            <button onclick="toggleLanguage()" class="bg-white text-blue-600 px-3 py-1.5 rounded-lg text-sm font-semibold shadow hover:bg-blue-50 transition">
+                🌐 <span id="langBtnText">English</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white shadow-sm border-b sticky top-14 z-40">
+        <div class="container mx-auto flex justify-around py-2">
+            <button onclick="switchTab('labour')" id="tabLabour" class="tab-btn px-4 py-2 font-semibold text-blue-600 border-b-2 border-blue-600 text-sm">
+                👷 लेबर / मिस्त्री चौक
+            </button>
+            <button onclick="switchTab('rooms')" id="tabRooms" class="tab-btn px-4 py-2 font-medium text-gray-500 text-sm">
+                🏠 रूम / मकान किराए
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="container mx-auto px-4 py-4 max-w-2xl pb-20">
+
+        <!-- LABOUR SECTION -->
+        <section id="sectionLabour" class="space-y-4">
+            <div class="flex justify-between items-center bg-blue-50 p-3 rounded-xl border border-blue-100">
+                <div>
+                    <h2 class="font-bold text-blue-900 text-sm">रोजगार सहायता केंद्र</h2>
+                    <p class="text-xs text-blue-700">ठेकेदार सीधे संपर्क करें</p>
+                </div>
+                <button onclick="openModal('labour')" class="bg-blue-600 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow hover:bg-blue-700">
+                    + खुद को दर्ज करें
+                </button>
+            </div>
+
+            <!-- Filter Categories -->
+            <div class="flex gap-2 overflow-x-auto pb-2 text-xs">
+                <button onclick="filterLabour('all')" class="bg-gray-200 px-3 py-1.5 rounded-full font-medium whitespace-nowrap active-filter">सभी (All)</button>
+                <button onclick="filterLabour('raj mistri')" class="bg-gray-100 px-3 py-1.5 rounded-full whitespace-nowrap">राज मिस्त्री</button>
+                <button onclick="filterLabour('helper')" class="bg-gray-100 px-3 py-1.5 rounded-full whitespace-nowrap">हेल्पर / मजदूर</button>
+                <button onclick="filterLabour('electrician')" class="bg-gray-100 px-3 py-1.5 rounded-full whitespace-nowrap">इलेक्ट्रीशियन / प्लंबर</button>
+            </div>
+
+            <!-- Labour List -->
+            <div id="labourList" class="space-y-3">
+                <!-- Dynamic Items will load here -->
+            </div>
+        </section>
+
+        <!-- ROOMS SECTION -->
+        <section id="sectionRooms" class="hidden space-y-4">
+            <div class="flex justify-between items-center bg-green-50 p-3 rounded-xl border border-green-100">
+                <div>
+                    <h2 class="font-bold text-green-900 text-sm">टपुकड़ा रूम / पीजी खोज</h2>
+                    <p class="text-xs text-green-700">किराए के मकान सीधे मालिक से</p>
+                </div>
+                <button onclick="openModal('room')" class="bg-green-600 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow hover:bg-green-700">
+                    + रूम जोड़े (Rent)
+                </button>
+            </div>
+
+            <!-- Rooms List -->
+            <div id="roomList" class="space-y-3">
+                <!-- Dynamic Items will load here -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Registration Modal -->
+    <div id="dataModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 id="modalTitle" class="font-bold text-lg text-gray-800">नया विवरण जोड़ें</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 font-bold text-lg">✕</button>
+            </div>
+            <form id="entryForm" onsubmit="handleFormSubmit(event)" class="space-y-3 text-sm">
+                <input type="hidden" id="formType" value="labour">
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1" id="labelName">पूरा नाम (Full Name)</label>
+                    <input type="text" id="inputName" required class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="उदा. राम सिंह">
+                </div>
+                <div id="categoryGroup">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">काम का प्रकार (Work Type / Skill)</label>
+                    <select id="inputCategory" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="raj mistri">राज मिस्त्री (Mason)</option>
+                        <option value="helper">हेल्पर / मजदूरी (Helper/Labour)</option>
+                        <option value="electrician">इलेक्ट्रीशियन / प्लंबर (Electrician/Plumber)</option>
+                        <option value="painter">पेंटर / वेल्डर (Painter/Welder)</option>
+                    </select>
+                </div>
+                <div id="priceGroup" class="hidden">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">किराया प्रति माह (Monthly Rent)</label>
+                    <input type="text" id="inputPrice" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="उदा. ₹3500/महीना">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">मोबाइल नंबर (WhatsApp Number)</label>
+                    <input type="tel" id="inputPhone" required pattern="[0-9]{10}" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="10 अंकों का मोबाइल नंबर">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1" id="labelLocation">टपुकड़ा में पता / चौक (Location)</label>
+                    <input type="text" id="inputLocation" required class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="उदा. मुख्य चौक / Joriya Road">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2.5 rounded-lg font-semibold shadow hover:bg-blue-700 transition">डेटा सुरक्षित करें (Submit)</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script logic -->
+    <script>
+        let currentLang = 'hi';
+        let activeTab = 'labour';
+
+        // Sample Data
+        let labours = [
+            { id: 1, name: "Mahendra Singh", category: "raj mistri", phone: "9876543210", location: "Main Chowk, Tapukara" },
+            { id: 2, name: "Rahul Kumar", category: "helper", phone: "9123456789", location: "Joriya Road, Tapukara" },
+            { id: 3, name: "Sunil Sharma", category: "electrician", phone: "9988776655", location: "RIICO Chowk" }
+        ];
+
+        let rooms = [
+            { id: 1, name: "Shyam Lal (Room Owner)", price: "₹3,500 / माह", phone: "9811122333", location: "Near Bus Stand, Tapukara (Single Room)" },
+            { id: 2, name: "Gupta Ji PG", price: "₹5,000 / माह", phone: "9822233444", location: "Joriya Road (PG for Boys)" }
+        ];
+
+        function renderLabour(filter = 'all') {
+            const listEl = document.getElementById('labourList');
+            listEl.innerHTML = '';
+            
+            let filtered = labours;
+            if (filter !== 'all') {
+                filtered = labours.filter(l => l.category === filter);
+            }
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = `<p class="text-center text-gray-400 text-xs py-4">Koi labour uplabdh nahi hai.</p>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                listEl.innerHTML += `
+                    <div class="bg-white p-3.5 rounded-xl border shadow-sm flex justify-between items-center">
+                        <div>
+                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-medium uppercase">${item.category}</span>
+                            <h3 class="font-bold text-gray-900 text-sm mt-1">${item.name}</h3>
+                            <p class="text-xs text-gray-500">📍 ${item.location}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <a href="tel:${item.phone}" class="bg-green-600 text-white p-2.5 rounded-xl shadow hover:bg-green-700 text-xs font-bold">📞 Call</a>
+                            <a href="https://wa.me/91${item.phone}?text=Namaste,%20mujhe%20aapki%20zaroorat%20hai%20Tapukara%20mein." target="_blank" class="bg-emerald-500 text-white p-2.5 rounded-xl shadow hover:bg-emerald-600 text-xs font-bold">💬 WhatsApp</a>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderRooms() {
+            const listEl = document.getElementById('roomList');
+            listEl.innerHTML = '';
+
+            rooms.forEach(item => {
+                listEl.innerHTML += `
+                    <div class="bg-white p-3.5 rounded-xl border shadow-sm flex justify-between items-center">
+                        <div>
+                            <span class="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-medium">Room Available</span>
+                            <h3 class="font-bold text-gray-900 text-sm mt-1">${item.name}</h3>
+                            <p class="text-xs text-green-700 font-semibold">💰 ${item.price}</p>
+                            <p class="text-xs text-gray-500">📍 ${item.location}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <a href="tel:${item.phone}" class="bg-green-600 text-white p-2.5 rounded-xl shadow hover:bg-green-700 text-xs font-bold">📞 Call</a>
+                            <a href="https://wa.me/91${item.phone}?text=Namaste,%20mujhe%20room%20chahiye%20Tapukara%20mein." target="_blank" class="bg-emerald-500 text-white p-2.5 rounded-xl shadow hover:bg-emerald-600 text-xs font-bold">💬 WhatsApp</a>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function switchTab(tab) {
+            activeTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('border-b-2', 'border-blue-600', 'text-blue-600', 'font-semibold');
+                b.classList.add('text-gray-500', 'font-medium');
+            });
+
+            if (tab === 'labour') {
+                document.getElementById('tabLabour').classList.add('border-b-2', 'border-blue-600', 'text-blue-600', 'font-semibold');
+                document.getElementById('sectionLabour').classList.remove('hidden');
+                document.getElementById('sectionRooms').classList.add('hidden');
+                renderLabour();
+            } else {
+                document.getElementById('tabRooms').classList.add('border-b-2', 'border-blue-600', 'text-blue-600', 'font-semibold');
+                document.getElementById('sectionRooms').classList.remove('hidden');
+                document.getElementById('sectionLabour').classList.add('hidden');
+                renderRooms();
+            }
+        }
+
+        function openModal(type) {
+            document.getElementById('dataModal').classList.remove('hidden');
+            document.getElementById('formType').value = type;
+            if (type === 'labour') {
+                document.getElementById('modalTitle').innerText = 'लेबर / मिस्त्री के रूप में जुड़ें';
+                document.getElementById('categoryGroup').classList.remove('hidden');
+                document.getElementById('priceGroup').classList.add('hidden');
+                document.getElementById('labelLocation').innerText = 'टपुकड़ा में पता / चौक (Location)';
+            } else {
+                document.getElementById('modalTitle').innerText = 'किराए का रूम / मकान जोड़ें';
+                document.getElementById('categoryGroup').classList.add('hidden');
+                document.getElementById('priceGroup').classList.remove('hidden');
+                document.getElementById('labelLocation').innerText = 'रूम का पूरा पता / विवरण (Address)';
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('dataModal').classList.add('hidden');
+            document.getElementById('entryForm').reset();
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const type = document.getElementById('formType').value;
+            const name = document.getElementById('inputName').value;
+            const phone = document.getElementById('inputPhone').value;
+            const location = document.getElementById('inputLocation').value;
+
+            if (type === 'labour') {
+                const category = document.getElementById('inputCategory').value;
+                labours.unshift({ id: Date.now(), name, category, phone, location });
+                renderLabour();
+                switchTab('labour');
+            } else {
+                const price = document.getElementById('inputPrice').value || "₹3,000 / माह";
+                rooms.unshift({ id: Date.now(), name, price: price + " / माह", phone, location });
+                renderRooms();
+                switchTab('rooms');
+            }
+            closeModal();
+            alert('सफलतापूर्वक दर्ज हो गया!');
+        }
+
+        function filterLabour(cat) {
+            document.querySelectorAll('#sectionLabour .flex.gap-2 button').forEach(b => b.classList.remove('bg-blue-600', 'text-white', 'active-filter'));
+            event.target.classList.add('bg-blue-600', 'text-white', 'active-filter');
+            renderLabour(cat);
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'hi' ? 'en' : 'hi';
+            document.getElementById('langBtnText').innerText = currentLang === 'hi' ? 'English' : 'हिंदी';
+            document.getElementById('appTitle').innerText = currentLang === 'hi' ? '🛠️ टपुकड़ा लेबर & रूम हॉप' : '🛠️ Tapukara Labour & Room Hub';
+            document.getElementById('appSubtitle').innerText = currentLang === 'hi' ? 'चौक के मजदूर, मिस्त्री और रूम की जानकारी एक जगह' : 'Daily Labour, Masons & Room Rentals in Tapukara';
+        }
+
+        // Initial Load
+        renderLabour();
+    </script>
+</body>
+</html>
